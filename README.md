@@ -10,6 +10,19 @@ For macos:
 export SAXONC_HOME=$YOUR_PROJECT_BASE_PATH/saxon/saxon-macos
 export PYTHONPATH=$PYTHONPATH:$YOUR_PROJECT_BASE_PATH/saxon/saxon-macos/Saxon.C.API/python-saxon
 
+
+cd $SAXONC_HOME 
+unzip libsaxon-HEC-mac-setup-v11.4.zip
+cd libsaxon-HEC-11.4
+cp libsaxonhec.dylib $SAXONC_HOME
+cp -r rt $SAXONC_HOME
+cp -r saxon-data $SAXONC_HOME
+cp -r Saxon.C.API $SAXONC_HOME
+cd $SAXONC_HOME/Saxon.C.API/python-saxon
+python3 saxon-setup.py build_ext -if
+If it goes well, a build directory will be created in $SAXONC_HOME/Saxon.C.API/python-saxon
+
+
 For PyCharm:
 add SAXONC_HOME and PYTHONPATH on your environment
 
