@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "dans-transformer-srv"
+name = "dans-transformer-service"
 version = "0.1.0"
 description = ""
 authors = ["ekoi <eko.indarto@dans.knaw.nl>"]
