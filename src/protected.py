@@ -1,5 +1,7 @@
+import json
 import logging
 import os, requests
+import xml.etree.ElementTree as ET
 
 from fastapi import APIRouter, Request, HTTPException, status
 
@@ -43,24 +45,35 @@ async def process_xsl(s_xsl, save, xsl_name):
 @router.post("/transform/{xsl_name}")
 async def transform(xsl_name: str, submitted_json_or_xml: Request):
     content_type = submitted_json_or_xml.headers['Content-Type']
-    sjox = ""
+    s_submitted = ""
     if xsl_name not in data.keys():
         raise HTTPException(status_code=500, detail=f'{xsl_name} not found')
 
     if content_type in ['application/json', 'application/xml']:
-        sjox = await submitted_json_or_xml.body()
-        if not (content_type == 'application/json' and common.validate_json(sjox)):
-            raise HTTPException(status_code=500, detail=f'Submitted json is not valid')
+        if content_type == 'application/json':
+            try:
+                submitted_json = await submitted_json_or_xml.json()
+                s_submitted = "<data>" + json.dumps(submitted_json) + "</data>"
+            except ValueError as err:
+                logging.debug(err)
+                raise HTTPException(status_code=500, detail=f'Submitted json is not valid. {err}')
+        else:
+            submitted_xml = await submitted_json_or_xml.body()
+            try:
+                tree = ET.parse(submitted_xml)
+                s_submitted = submitted_xml
+            except ValueError as err:
+                logging.debug(err)
+                raise HTTPException(status_code=500, detail=f'Submitted XML is not valid. {err}')
 
     else:
         raise HTTPException(status_code=400, detail=f'Content type {content_type} not supported')
-    input_str = "<data>" + sjox.decode('UTF-8') + "</data>"
+
     with open(settings.TEMP_TRANSFORM_FILE, mode="w") as file:
-        file.write(input_str)
+        file.write(s_submitted)
     result = data[xsl_name].transform_to_string(source_file=settings.TEMP_TRANSFORM_FILE)
     logging.debug(result)
-    return result
-
+    return {"result": result}
 
 @router.post('/submit-xsl/{xsl_name}/{url:path}/{save}', status_code=201)
 async def submit_xsl_from_url(xsl_name: str, url: str, save: bool | None = False):
