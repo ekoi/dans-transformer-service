@@ -45,14 +45,14 @@ app.include_router(
 
 @app.on_event('startup')
 def common_data():
-    logging.DEBUG("startup")
+    logging.debug("startup")
     with saxonc.PySaxonProcessor(license=False) as proc:
-        logging.DEBUG(proc.version)
+        logging.debug(proc.version)
         xslt_proc = proc.new_xslt30_processor()
 
         for filename in os.listdir(common.saved_xsl_dir):
             if filename.endswith(common.saved_xsl_ext_file):
-                logging.DEBUG(filename)  # logging.DEBUGing file name of desired extension
+                logging.debug(filename)  # logging.debuging file name of desired extension
                 f = os.path.join(common.saved_xsl_dir, filename)
                 executable = xslt_proc.compile_stylesheet(stylesheet_file=f)
                 common.data.update({filename.replace(common.saved_xsl_ext_file, ""): executable})
@@ -81,7 +81,7 @@ def get_saved_xsl_list(xsl_name: str | None = Query(default=None, description="i
     else:
         for filename in os.listdir(common.saved_xsl_dir):
             if filename.endswith(common.saved_xsl_ext_file):
-                logging.DEBUG(filename)  # logging.DEBUGing file name of desired extension
+                logging.debug(filename)  # logging.debuging file name of desired extension
                 f = os.path.join(common.saved_xsl_dir, filename)
                 with open(f) as s:
                     text = s.read()

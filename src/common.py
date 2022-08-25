@@ -19,7 +19,7 @@ def validate_json(jsonData):
     try:
         json.loads(jsonData)
     except ValueError as err:
-        logging.DEBUG(err)
+        logging.debug(err)
         return False
     return True
 
@@ -27,7 +27,7 @@ def validate_json(jsonData):
 
 async def ceate_executable_xslt(s_xsl):
     with saxonc.PySaxonProcessor(license=False) as proc:
-        logging.DEBUG(proc.version)
+        logging.debug(proc.version)
         xsltproc = proc.new_xslt30_processor()
 
         if not isinstance(s_xsl, str):

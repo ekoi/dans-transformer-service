@@ -58,7 +58,7 @@ async def transform(xsl_name: str, submitted_json_or_xml: Request):
     with open(settings.TEMP_TRANSFORM_FILE, mode="w") as file:
         file.write(input_str)
     result = data[xsl_name].transform_to_string(source_file=settings.TEMP_TRANSFORM_FILE)
-    logging.DEBUG(result)
+    logging.debug(result)
     return result
 
 
