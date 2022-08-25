@@ -32,7 +32,6 @@
          ],
         "titles": [{"title": "<xsl:value-of select="$title"/>"}],
         "publisher": "ODISSEI",
-        "url": "https://portal.test.odissei.nl",
         "publicationYear": "<xsl:value-of select="year-from-date($currentDate)"/>",
         "types": {
         "resourceType": "Dataset",
