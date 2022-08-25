@@ -1,6 +1,6 @@
 FROM python:3.10.6-slim-bullseye
 
-ARG VERSION=0.1.0
+ARG VERSION=0.2.0
 
 RUN  apt-get update -y && \
      apt-get upgrade -y && \

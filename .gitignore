@@ -134,3 +134,4 @@ dist
 /saxon/saxon-macos/saxon-data/
 /saxon/saxon-macos/Saxon.C.API/
 /saxon/saxon-macos/libsaxonhec.dylib
+/src/.secrets.toml
