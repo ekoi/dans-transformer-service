@@ -33,7 +33,7 @@ RUN mkdir -p ${BASE_DIR} && \
     cd /home/dans/dans-transformer-service/saxon/saxon-linux/libsaxon-HEC-11.4/Saxon.C.API/python-saxon && python3 saxon-setup.py build_ext -if
 
 
-COPY ./src/.secrets.toml ${BASE_DIR}/.secrets.toml
+COPY src/conf/.secrets.toml ${BASE_DIR}/conf/.secrets.toml
 
 CMD ["python", "main.py"] \
 #CMD ["tail", "-f", "/dev/null"]

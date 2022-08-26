@@ -1,24 +1,20 @@
-import requests
-import saxonc
+import importlib.metadata
+import logging
 import os
 from os.path import exists
-import logging
+
+import saxonc
+import uvicorn
 from fastapi import FastAPI, HTTPException, Depends, status, Query
 from fastapi.security import OAuth2PasswordBearer
-import uvicorn
-
-from dynaconf import Dynaconf
-
-import importlib.metadata
 
 __version__ = importlib.metadata.metadata("dans-transformer-service")["version"]
 
 from src import common, protected
 from src.common import settings
-from src.protected import process_xsl
 
 api_keys = [
-    settings.API_KEY
+    settings.SERVICE_API_KEY
 ]  # Todo: This is encrypted in the .secrets.toml
 
 #Authorization Form: It doesn't matter what you type in the form, it won't work yet. But we'll get there.
@@ -34,7 +30,8 @@ def api_key_auth(api_key: str = Depends(oauth2_scheme)):
         )
 
 
-app = FastAPI()
+app = FastAPI(title=settings.FASTAPI_TITLE, description=settings.FASTAPI_DESCRIPTION,
+              version=__version__)
 
 
 app.include_router(
@@ -50,12 +47,12 @@ def common_data():
         logging.debug(proc.version)
         xslt_proc = proc.new_xslt30_processor()
 
-        for filename in os.listdir(common.saved_xsl_dir):
-            if filename.endswith(common.saved_xsl_ext_file):
+        for filename in os.listdir(common.saved_xslt_dir):
+            if filename.endswith(common.saved_xslt_ext_file):
                 logging.debug(filename)  # logging.debuging file name of desired extension
-                f = os.path.join(common.saved_xsl_dir, filename)
+                f = os.path.join(common.saved_xslt_dir, filename)
                 executable = xslt_proc.compile_stylesheet(stylesheet_file=f)
-                common.data.update({filename.replace(common.saved_xsl_ext_file, ""): executable})
+                common.data.update({filename.replace(common.saved_xslt_ext_file, ""): executable})
             else:
                 continue
     return common.data
@@ -67,28 +64,28 @@ def info():
 
 
 @app.get('/saved-xsl-list', description="List of saved xsl.")
-def get_saved_xsl_list(xsl_name: str | None = Query(default=None, description="if not provide, all saved list will be given.", max_length=25)):
-    xsl_list = {}
-    if xsl_name:
-        fname = os.path.join(common.saved_xsl_dir, xsl_name + common.saved_xsl_ext_file)
+def get_saved_xslt_list(xslt_name: str | None = Query(default=None, description="if not provide, all saved list will be given.", max_length=25)):
+    xslt_list = {}
+    if xslt_name:
+        fname = os.path.join(common.saved_xslt_dir, xslt_name + common.saved_xslt_ext_file)
         if not exists(fname):
-            raise HTTPException(status_code=500, detail=f'{xsl_name} not found')
+            raise HTTPException(status_code=500, detail=f'{xslt_name} not found')
         else:
             with open(fname) as s:
                 text = s.read()
-                xsl_list.update({xsl_name: text})
+                xslt_list.update({xslt_name: text})
 
     else:
-        for filename in os.listdir(common.saved_xsl_dir):
-            if filename.endswith(common.saved_xsl_ext_file):
+        for filename in os.listdir(common.saved_xslt_dir):
+            if filename.endswith(common.saved_xslt_ext_file):
                 logging.debug(filename)  # logging.debuging file name of desired extension
-                f = os.path.join(common.saved_xsl_dir, filename)
+                f = os.path.join(common.saved_xslt_dir, filename)
                 with open(f) as s:
                     text = s.read()
-                    xsl_list.update({filename.replace(common.saved_xsl_ext_file, ""): text})
+                    xslt_list.update({filename.replace(common.saved_xslt_ext_file, ""): text})
             else:
                 continue
-    return xsl_list
+    return xslt_list
 
 
 if __name__ == "__main__":
