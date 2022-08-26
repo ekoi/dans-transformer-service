@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dans-transformer-service"
-version = "0.2.0"
+version = "0.2.5"
 description = "DANS Transformer Service"
 authors = ["eko indarto <eko.indarto@dans.knaw.nl>"]
 include = ["resources/*", "saxon/saxon-linux/*", "saved-xsl/*", "logs/*"]
