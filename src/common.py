@@ -5,7 +5,7 @@ import json
 
 from dynaconf import Dynaconf
 
-settings = Dynaconf(settings_files=["settings.toml", ".secrets.toml"],
+settings = Dynaconf(settings_files=["conf/settings.toml", "conf/.secrets.toml"],
                     environments=True)
 
 logging.basicConfig(filename=settings.LOG_FILE, level=settings.LOG_LEVEL,
