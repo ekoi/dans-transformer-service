@@ -16,7 +16,7 @@
         <xsl:variable name="doi-prefix" select="10.57934"/>
         <xsl:variable name="other-id" select="//map[@key='citation']/array[@key='fields']/map/array[@key='value']/map/map[@key='otherIdValue']/string[@key='typeName' and text()='otherIdValue']//following-sibling::string[@key='value']/."/>
         <xsl:variable name="title" select="//map[@key='citation']/array[@key='fields']/map/string[@key='typeName' and text()='title']//following-sibling::string[@key='value']/."/>
-        <xsl:variable name="currentDate" select="current-date()"/>
+        <xsl:variable name="pub-year" select="substring-before(//map[@key='citation']/array[@key='fields']/map/string[@key='typeName' and text()='distributionDate']//following-sibling::string[@key='value']/., '-')"/>
         {
         "identifiers": [{
         "identifierType": "DOI",
@@ -32,7 +32,7 @@
          ],
         "titles": [{"title": "<xsl:value-of select="$title"/>"}],
         "publisher": "ODISSEI",
-        "publicationYear": "<xsl:value-of select="year-from-date($currentDate)"/>",
+        "publicationYear": "<xsl:value-of select="$pub-year"/>",
         "types": {
         "resourceType": "Dataset",
         "resourceTypeGeneral": "Dataset"

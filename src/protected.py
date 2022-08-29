@@ -1,18 +1,21 @@
 import json
+import shutil
 import logging
 import os
 import requests
 import xml.etree.ElementTree as ET
-
+# import codecs
 from fastapi import APIRouter, Request, HTTPException
 
 from src.common import ceate_executable_xslt, saved_xslt_dir, saved_xslt_ext_file, data, settings
 
 router = APIRouter()
 
+
 @router.get("/ping")
 async def say_hi(name: str):
     return "Hi " + name
+
 
 @router.post('/submit-xsl/{xslt_name}/{save}', status_code=201)
 async def submit_xsl(xslt_name: str, submitted_xsl: Request, save: bool | None = False):
@@ -45,7 +48,7 @@ async def process_xsl(s_xsl, save, xslt_name):
 @router.post("/transform/{xslt_name}")
 async def transform(xslt_name: str, submitted_json_or_xml: Request):
     content_type = submitted_json_or_xml.headers['Content-Type']
-    s_submitted = ""
+    str_submitted_xml = ""
     if xslt_name not in data.keys():
         raise HTTPException(status_code=500, detail=f'The given xslt_name: "{xslt_name}" is not found')
 
@@ -53,7 +56,18 @@ async def transform(xslt_name: str, submitted_json_or_xml: Request):
         if content_type == 'application/json':
             try:
                 submitted_json = await submitted_json_or_xml.json()
-                s_submitted = "<data>" + json.dumps(submitted_json) + "</data>"
+                # submitted_json = {k: v.replace("&","&#38;").replace("<","&#60;") for k, v in submitted_json.items()}
+                submitted_json_str = json.dumps(submitted_json)
+                # saxon needs json that encapsulates in xml
+                str_submitted_xml = '<data>' + submitted_json_str + '</data>'
+                # write the xml to a temporary file
+                with open(settings.TEMP_TRANSFORM_FILE, mode="w") as file:
+                    file.write(str_submitted_xml)
+                etree = ET.parse(settings.TEMP_TRANSFORM_FILE)
+            except ET.ParseError as pe:
+                logging.debug(pe)
+                shutil.copyfile(settings.TEMP_TRANSFORM_FILE, settings.TEMP_TRANSFORM_FILE + "-error-tobe_converted")
+                str_submitted_xml = remove_xml_invalid_characters(submitted_json_str)
             except ValueError as err:
                 logging.debug(err)
                 raise HTTPException(status_code=500, detail=f'Submitted json is not valid. {err}')
@@ -70,17 +84,40 @@ async def transform(xslt_name: str, submitted_json_or_xml: Request):
         raise HTTPException(status_code=400, detail=f'Content type {content_type} not supported')
 
     with open(settings.TEMP_TRANSFORM_FILE, mode="w") as file:
-        file.write(s_submitted)
+        file.write(str_submitted_xml)
+    # file = codecs.open(settings.TEMP_TRANSFORM_FILE, "w", "utf-8")
+    # file.write(str_submitted_xml)
+    # file.close()
     result = data[xslt_name].transform_to_string(source_file=settings.TEMP_TRANSFORM_FILE)
+    if result is None:
+        logging(f'Empty result, submitted_json: {submitted_json}')
+        raise HTTPException(status_code=500, detail=f'Empty result, submitted_json: {submitted_json}')
+
     logging.debug(result)
     return {"result": result}
+
+
+#
+def remove_xml_invalid_characters(str_json):
+    str_xml = "<data>" + str_json.replace("&", "&#38;").replace("<", "&#60;") + "</data>"
+    # write the xml to a temporary file
+    with open(settings.TEMP_TRANSFORM_FILE, mode="w") as file:
+        file.write(str_xml)
+    try:
+        etree = ET.parse(settings.TEMP_TRANSFORM_FILE)
+        return str_xml
+    except ET.ParseError as pe:
+        logging.debug(pe)
+        shutil.copyfile(settings.TEMP_TRANSFORM_FILE, settings.TEMP_TRANSFORM_FILE + "-ERROR-converted-fail")
+        raise HTTPException(status_code=500, detail=f'Transformed json is not valid. {pe}')
 
 
 @router.post('/submit-xsl/{xslt_name}/{url:path}/{save}', status_code=201)
 async def submit_xslt_from_url(xslt_name: str, url: str, save: bool | None = False):
     response = requests.get(url)
     if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=f'Retrieve response code {response.status_code} from {url}')
+        raise HTTPException(status_code=response.status_code,
+                            detail=f'Retrieve response code {response.status_code} from {url}')
     else:
         xsl = response.text
         msg = await process_xsl(xsl, save, xslt_name)
@@ -90,6 +127,7 @@ async def submit_xslt_from_url(xslt_name: str, url: str, save: bool | None = Fal
 @router.get("/settings")
 async def get_settings():
     return settings
+
 
 @router.delete("/delete-saved-xsl/{xslt_name}", status_code=204)
 def delete_saved_xsl(xslt_name: str):

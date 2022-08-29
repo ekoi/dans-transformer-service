@@ -14,7 +14,7 @@ from src import common, protected
 from src.common import settings
 
 api_keys = [
-    settings.SERVICE_API_KEY
+    settings.DANS_TRANSFORMER_SERVICE_API_KEY
 ]  # Todo: This is encrypted in the .secrets.toml
 
 #Authorization Form: It doesn't matter what you type in the form, it won't work yet. But we'll get there.
