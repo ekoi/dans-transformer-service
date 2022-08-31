@@ -12,8 +12,7 @@ logging.basicConfig(filename=settings.LOG_FILE, level=settings.LOG_LEVEL,
                     format=settings.LOG_FORMAT)
 
 data = {}
-saved_xslt_dir = "../saved-xsl"
-saved_xslt_ext_file = ".xsl"
+
 
 def validate_json(jsonData):
     try:
@@ -22,7 +21,6 @@ def validate_json(jsonData):
         logging.debug(err)
         return False
     return True
-
 
 
 async def ceate_executable_xslt(s_xsl):

@@ -14,8 +14,11 @@ log_format = "%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s"
 #WARNING = 30
 #INFO = 20
 #DEBUG = 10
+#xsl location
+saved_xslt_dir = "../saved-xsl"
 
-dois_file_path = "../logs/dois.txt"
+#jinja template location
+jinja_and_prop_dir = "../saved-templates"
 
 [development]
 

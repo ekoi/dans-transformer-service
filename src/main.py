@@ -3,6 +3,7 @@ import logging
 import os
 from os.path import exists
 
+import jinja2
 import saxonc
 import uvicorn
 from fastapi import FastAPI, HTTPException, Depends, status, Query
@@ -10,7 +11,9 @@ from fastapi.security import OAuth2PasswordBearer
 
 __version__ = importlib.metadata.metadata("dans-transformer-service")["version"]
 
-from src import common, protected
+from jproperties import Properties
+
+from src import common, protected, public
 from src.common import settings
 
 api_keys = [
@@ -35,7 +38,14 @@ app = FastAPI(title=settings.FASTAPI_TITLE, description=settings.FASTAPI_DESCRIP
 
 
 app.include_router(
+    public.router,
+    tags=["Public"],
+    prefix=""
+)
+
+app.include_router(
     protected.router,
+    tags=["Protected"],
     prefix="",
     dependencies=[Depends(api_key_auth)]
 )
@@ -43,49 +53,47 @@ app.include_router(
 @app.on_event('startup')
 def common_data():
     logging.debug("startup")
+    iterate_saved_jinja_and_props()
     with saxonc.PySaxonProcessor(license=False) as proc:
         logging.debug(proc.version)
         xslt_proc = proc.new_xslt30_processor()
-
-        for filename in os.listdir(common.saved_xslt_dir):
-            if filename.endswith(common.saved_xslt_ext_file):
-                logging.debug(filename)  # logging.debuging file name of desired extension
-                f = os.path.join(common.saved_xslt_dir, filename)
-                executable = xslt_proc.compile_stylesheet(stylesheet_file=f)
-                common.data.update({filename.replace(common.saved_xslt_ext_file, ""): executable})
-            else:
-                continue
+        iterate_saved_xsl_dir(xslt_proc)
     return common.data
 
 
-@app.get('/')
-def info():
-    return {"name": "DANS Transformer Service", "version": __version__}
-
-
-@app.get('/saved-xsl-list', description="List of saved xsl.")
-def get_saved_xslt_list(xslt_name: str | None = Query(default=None, description="if not provide, all saved list will be given.", max_length=25)):
-    xslt_list = {}
-    if xslt_name:
-        fname = os.path.join(common.saved_xslt_dir, xslt_name + common.saved_xslt_ext_file)
-        if not exists(fname):
-            raise HTTPException(status_code=500, detail=f'{xslt_name} not found')
-        else:
-            with open(fname) as s:
-                text = s.read()
-                xslt_list.update({xslt_name: text})
-
-    else:
-        for filename in os.listdir(common.saved_xslt_dir):
-            if filename.endswith(common.saved_xslt_ext_file):
-                logging.debug(filename)  # logging.debuging file name of desired extension
-                f = os.path.join(common.saved_xslt_dir, filename)
-                with open(f) as s:
-                    text = s.read()
-                    xslt_list.update({filename.replace(common.saved_xslt_ext_file, ""): text})
+def iterate_saved_jinja_and_props():
+    templateLoader = jinja2.FileSystemLoader(searchpath=settings.JINJA_AND_PROP_DIR)
+    templateEnv = jinja2.Environment(loader=templateLoader)
+    for jinja_template_fname in os.listdir(settings.JINJA_AND_PROP_DIR):
+        # jinja templates and mapping properties need to be existed in couple
+        # Eg. datacite-jinja_templates.txt has to be coupled with datacite-jsonpathfinder_mapping.properties
+        if jinja_template_fname.endswith("-jinja_templates.txt"):
+            logging.debug(jinja_template_fname)  # logging.debuging file name of desired extension
+            # rel_path_jinja_template_filename = os.path.join(settings.JINJA_AND_PROP_DIR, jinja_template_filename)
+            jinja_json_template = templateEnv.get_template(jinja_template_fname)
+            jsonpath_prop_fname = jinja_template_fname.replace("-jinja_templates.txt", "-jsonpathfinder_mapping.properties")
+            rel_path_jsonpath_prop_fname = os.path.join(settings.JINJA_AND_PROP_DIR, jsonpath_prop_fname)
+            if not exists(rel_path_jsonpath_prop_fname):
+                logging.error(f"{rel_path_jsonpath_prop_fname} doesn't exist.")
             else:
-                continue
-    return xslt_list
+                configs = Properties()
+                with open(rel_path_jsonpath_prop_fname, 'rb') as read_prop:
+                    configs.load(read_prop)
+                common.data.update({jinja_template_fname: jinja_json_template})
+                common.data.update({jsonpath_prop_fname: configs.items()})
+        else:
+            continue
+
+
+def iterate_saved_xsl_dir(xslt_proc):
+    for filename in os.listdir(settings.SAVED_XSLT_DIR):
+        if filename.endswith(".xsl"):
+            logging.debug(filename)  # logging.debuging file name of desired extension
+            f = os.path.join(settings.SAVED_XSLT_DIR, filename)
+            executable = xslt_proc.compile_stylesheet(stylesheet_file=f)
+            common.data.update({filename: executable})
+        else:
+            continue
 
 
 if __name__ == "__main__":

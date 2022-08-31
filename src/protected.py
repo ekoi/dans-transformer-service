@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 # import codecs
 from fastapi import APIRouter, Request, HTTPException
 
-from src.common import ceate_executable_xslt, saved_xslt_dir, saved_xslt_ext_file, data, settings
+from src.common import ceate_executable_xslt, data, settings
 
 router = APIRouter()
 
@@ -17,8 +17,17 @@ async def say_hi(name: str):
     return "Hi " + name
 
 
+@router.get("/settings")
+async def get_settings():
+    return settings
+
+
 @router.post('/submit-xsl/{xslt_name}/{save}', status_code=201)
 async def submit_xsl(xslt_name: str, submitted_xsl: Request, save: bool | None = False):
+    if not xslt_name.endswith(".xsl"):
+        logging.error(f"{xslt_name} should be something like 'any-name.xsl' ")
+        raise HTTPException(status_code=500, detail=f"Content type {xslt_name} not supported. It should be something like 'any-name.xsl' ")
+
     content_type = submitted_xsl.headers['Content-Type']
     s_xsl = ""
     if content_type == 'application/xml':
@@ -39,11 +48,15 @@ async def process_xsl(s_xsl, save, xslt_name):
     else:
         if not isinstance(s_xsl, str):
             s_xsl = s_xsl.decode('UTF-8')
-        with open(os.path.join(saved_xslt_dir, xslt_name + saved_xslt_ext_file), mode="w") as file:
+        with open(os.path.join(settings.SAVED_XSLT_DIR, xslt_name), mode="w") as file:
             file.write(s_xsl)
     data.update({xslt_name: executable_xslt})
     return msg
 
+
+@router.post("/transform-json/{template_name}")
+async def transform(template_name: str, submitted_json: Request):
+    raise HTTPException(status_code=501, detail=f'This eindpoint is not implemented yet.')
 
 @router.post("/transform/{xslt_name}")
 async def transform(xslt_name: str, submitted_json_or_xml: Request):
