@@ -13,7 +13,7 @@ __version__ = importlib.metadata.metadata("dans-transformer-service")["version"]
 
 from jproperties import Properties
 
-from src import common, protected, public
+from src import common, protected, public, admin
 from src.common import settings
 
 api_keys = [
@@ -48,6 +48,12 @@ app.include_router(
     tags=["Protected"],
     prefix="",
     dependencies=[Depends(api_key_auth)]
+)
+
+app.include_router(
+    admin.router,
+    tags=["admin"],
+    prefix="/admin"
 )
 
 @app.on_event('startup')

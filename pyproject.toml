@@ -3,7 +3,8 @@ name = "dans-transformer-service"
 version = "0.3.5"
 description = "DANS Transformer Service"
 authors = ["eko indarto <eko.indarto@dans.knaw.nl>"]
-include = ["resources/*", "saxon/saxon-linux/*", "saved-xsl/*", "logs/*"]
+include = ["resources/*", "saxon/saxon-linux/*", "saved-xsl/*", "logs/*", "static",
+    "admin-templates", "saved-templates"]
 
 packages = [
     { include = "src"}
