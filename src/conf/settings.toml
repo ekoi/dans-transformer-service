@@ -3,7 +3,7 @@
 fastapi_title = "DANS Transformer Service"
 fastapi_description = "This service supports .."
 
-temp_transform_file = "/tmp/transform.xml"
+temp_transform_file = "/tmp/transform"
 #logs
 log_file = "../logs/dts.log"
 log_level = 10

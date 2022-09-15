@@ -1,5 +1,6 @@
 import logging
-
+from enum import auto
+from fastapi_utils.enums import StrEnum
 import saxonc
 import json
 
@@ -13,10 +14,20 @@ logging.basicConfig(filename=settings.LOG_FILE, level=settings.LOG_LEVEL,
 
 data = {}
 
+class RdfOutputFormat(StrEnum):
+    xml = auto()
+    turtle = auto()
+    n3 = auto()
+    nt = auto()
+    trix = auto()
+    trig = auto()
+    nquads = auto()
+    hext = auto()
 
-def validate_json(jsonData):
+
+def validate_json(str_json):
     try:
-        json.loads(jsonData)
+        json.loads(str_json)
     except ValueError as err:
         logging.debug(err)
         return False

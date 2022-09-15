@@ -15,6 +15,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory='../admin-templates')
 router.mount('/static', StaticFiles(directory='../static'), name='static')
 
+
 @router.get('/home')
-def eko(request: Request):
+def home(request: Request):
     return templates.TemplateResponse('home.html', context={'request': request,  'vers': src.main.__version__})

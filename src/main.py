@@ -45,7 +45,7 @@ app.include_router(
 
 app.include_router(
     protected.router,
-    tags=["Protected"],
+    # tags=["Protected"],
     prefix="",
     dependencies=[Depends(api_key_auth)]
 )
