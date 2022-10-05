@@ -6,6 +6,7 @@ import os
 import requests
 import xml.etree.ElementTree as ET
 
+import xmltodict
 from rdflib import Graph
 
 # import codecs
@@ -134,6 +135,19 @@ async def transform(output_format: RdfOutputFormat, source_url):
     result = await transform_to_rdf(response.content, output_format.value)
 
     return {"result": result}
+
+
+@router.post("/transform-xml-to-json", tags=['Transform'], name='Transform xml to json format.'
+    , description='The output will be in json format.')
+async def transform(submitted_xml: Request):
+    content_type = submitted_xml.headers['Content-Type']
+    if content_type not in ['application/xml']:
+        raise HTTPException(status_code=400, detail=f'Content type {content_type} not supported')
+    submitted_xml = await submitted_xml.body()
+    result = xmltodict.parse(submitted_xml)
+
+    return {"result": result}
+
 
 @router.get("/ping", tags=['Other'])
 async def say_hi(name: str):
