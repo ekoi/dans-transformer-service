@@ -17,7 +17,7 @@ def info():
 
 
 @router.get('/saved-xsl-list', description="List of saved xsl.")
-def get_saved_xslt_list(xslt_name: str | None = Query(default=None, description="if not provide, all saved list will be given.", max_length=25)):
+def get_saved_xslt_list(xslt_name: str | None = Query(default=None, description="if not provide, all saved list will be given.", max_length=100)):
     xslt_list = {}
     if xslt_name:
         fname = os.path.join(settings.SAVED_XSLT_DIR, xslt_name)

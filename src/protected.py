@@ -7,6 +7,7 @@ import requests
 import xml.etree.ElementTree as ET
 
 import xmltodict
+from boltons.iterutils import remap
 from rdflib import Graph
 
 # import codecs
@@ -110,18 +111,21 @@ async def transform(submitted_json: Request):
     return {"result": result}
 
 
-@router.post("/transform-jsonld-to-rdf/{output_format}", tags=['Transform'], name='Transform json-ld to a given RDF output format.'
+@router.post("/transform-jsonld-to-rdf/{output_format}", tags=['Transform'],
+             name='Transform json-ld to a given RDF output format.'
     , description='The output will be in RDF-XML format.')
 async def transform(output_format: RdfOutputFormat, submitted_json: Request):
     if submitted_json.headers['Content-Type'] not in ['application/json+ld']:
-        raise HTTPException(status_code=400, detail=f"Content type {submitted_json.headers['Content-Type']} not supported")
+        raise HTTPException(status_code=400,
+                            detail=f"Content type {submitted_json.headers['Content-Type']} not supported")
     submitted_json = await submitted_json.json()
     result = await transform_to_rdf(json.dumps(submitted_json), output_format.value)
 
     return {"result": result}
 
 
-@router.post("/transform-jsonld-to-rdf/{output_format}/{source_url:path}", tags=['Transform'], name='Transform json-ld to a given RDF output format.')
+@router.post("/transform-jsonld-to-rdf/{output_format}/{source_url:path}", tags=['Transform'],
+             name='Transform json-ld to a given RDF output format.')
 async def transform(output_format: RdfOutputFormat, source_url):
     response = requests.get(source_url)
     if response.status_code != 200:
@@ -137,16 +141,21 @@ async def transform(output_format: RdfOutputFormat, source_url):
     return {"result": result}
 
 
-@router.post("/transform-xml-to-json", tags=['Transform'], name='Transform xml to json format.'
+@router.post("/transform-xml-to-json/{clean_output}", tags=['Transform'], name='Transform xml to json format.'
     , description='The output will be in json format.')
-async def transform(submitted_xml: Request):
+async def transform(submitted_xml: Request, clean_output: bool | None = False):
     content_type = submitted_xml.headers['Content-Type']
     if content_type not in ['application/xml']:
         raise HTTPException(status_code=400, detail=f'Content type {content_type} not supported')
     submitted_xml = await submitted_xml.body()
     result = xmltodict.parse(submitted_xml)
-
-    return {"result": result}
+    j_str = json.dumps(result).replace('{"@xsi:nil": "true"}', '""')
+    new_result = json.loads(j_str)
+    if clean_output:
+        drop_falsey = lambda path, key, value: bool(value)
+        clean_result = remap(new_result, visit=drop_falsey)
+        return {"result": clean_result}
+    return {"result": new_result}
 
 
 @router.get("/ping", tags=['Other'])
@@ -254,5 +263,3 @@ async def transform_to_rdf(str_submitted_json, output_format='xml'):
     except:
         raise HTTPException(status_code=500, detail=f'Error!')
     return result
-
-

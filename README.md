@@ -26,7 +26,7 @@ If it goes well, a build directory will be created in $SAXONC_HOME/Saxon.C.API/p
 For PyCharm:
 add SAXONC_HOME and PYTHONPATH on your environment
 
-poetry build;poetry install; docker rm -f dans-transformer-service; docker rmi ekoindarto/dans-transformer-service:0.5.0; docker build --no-cache -t ekoindarto/dans-transformer-service:0.5.0 -f Dockerfile . ;docker run -v /Users/akmi/git/ODISSEI/dans-transformer-service/src/conf:/home/dans/dans-transformer-service/src/conf -d -p 1745:1745 --name dans-transformer-service ekoindarto/dans-transformer-service:0.5.0; docker exec -it dans-transformer-service /bin/bash
+poetry build;poetry install; docker rm -f dans-transformer-service; docker rmi ekoindarto/dans-transformer-service:0.5.2; docker build --no-cache -t ekoindarto/dans-transformer-service:0.5.2 -f Dockerfile . ;docker run -v /Users/akmi/git/ODISSEI/dans-transformer-service/src/conf:/home/dans/dans-transformer-service/src/conf -d -p 1745:1745 --name dans-transformer-service ekoindarto/dans-transformer-service:0.5.2; docker exec -it dans-transformer-service /bin/bash
 
 curl -X POST -H "Content-Type: application/json" -d @/Users/akmi/git/ODISSEI/mapping-resources/examples/json/ext2.json http://0.0.0.0:1745/transform/cbs-datacite
 
