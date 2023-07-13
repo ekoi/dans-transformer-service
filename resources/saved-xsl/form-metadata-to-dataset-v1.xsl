@@ -25,22 +25,22 @@
         xpath-default-namespace="http://www.w3.org/2005/xpath-functions">
         <ddm:profile>
         <!-- CIT001 -->
-            <dc:title>A bag containing examples for each mapping rule</dc:title>
+            <dc:title><xsl:value-of select="//array[@key='metadata']/map/string[@key='name' and text()='title']/following-sibling::string[@key='value']/."/></dc:title>
         <!-- CIT002: see dcmiMetadata -->
         <!-- CIT003: see bag-info.txt -->
         <!-- CIT004: see dcmiMetadata -->
 
-        <!-- CIT009 -->
+        <!-- CIT009 Mapping Done-->
         <dcterms:description>
-            This bags contains one or more examples of each mapping rule.
+            <xsl:value-of select="/map/array[@key='metadata']/map/string[@key='name' and text()='description']/following-sibling::string[@key='value']/."/>
         </dcterms:description>
-        <!-- CIT009 -->
-        <dcterms:description>
+        <!-- CIT009 Mapping Done-->
+        <!--<dcterms:description>
             A second description
-        </dcterms:description>
+        </dcterms:description>-->
         <!-- CIT005 -->
         <dc:creator>
-            Unformatted Creator
+            Unformatted Creator <xsl:value-of select="//array[@key='metadata']/map/array[@key='value']/array/map/string[@key='name' and text()='contributorName']/following-sibling::string[@key='value']/."/>
         </dc:creator>
         <!-- CIT006 -->
         <dcx-dai:creatorDetails>
