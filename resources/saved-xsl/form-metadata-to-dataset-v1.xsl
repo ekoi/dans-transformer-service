@@ -25,54 +25,60 @@
         xpath-default-namespace="http://www.w3.org/2005/xpath-functions">
         <ddm:profile>
         <!-- CIT001 -->
-            <dc:title><xsl:value-of select="//array[@key='metadata']/map/string[@key='name' and text()='title']/following-sibling::string[@key='value']/."/></dc:title>
+            <dc:title><xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='title']/following-sibling::string[@key='value']/."/></dc:title>
         <!-- CIT002: see dcmiMetadata -->
         <!-- CIT003: see bag-info.txt -->
         <!-- CIT004: see dcmiMetadata -->
 
         <!-- CIT009 Mapping Done-->
         <dcterms:description>
-            <xsl:value-of select="/map/array[@key='metadata']/map/string[@key='name' and text()='description']/following-sibling::string[@key='value']/."/>
+            <xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='description']/following-sibling::string[@key='value']/."/>
         </dcterms:description>
         <!-- CIT009 Mapping Done-->
         <!--<dcterms:description>
             A second description
         </dcterms:description>-->
         <!-- CIT005 -->
-        <dc:creator>
-            Unformatted Creator <xsl:value-of select="//array[@key='metadata']/map/array[@key='value']/array/map/string[@key='name' and text()='contributorName']/following-sibling::string[@key='value']/."/>
-        </dc:creator>
-        <!-- CIT006 -->
+        <!--<dc:creator>
+            Unformatted Creator
+        </dc:creator>-->
+            <!-- CIT006 -->
         <dcx-dai:creatorDetails>
             <dcx-dai:author>
-                <dcx-dai:titles>Dr</dcx-dai:titles>
-                <dcx-dai:initials>I</dcx-dai:initials>
-                <dcx-dai:surname>Lastname</dcx-dai:surname>
+                <!--<dcx-dai:titles>Dr</dcx-dai:titles>-->
+                <dcx-dai:initials></dcx-dai:initials>
+                <dcx-dai:surname>
+                    <xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='author']/following-sibling::array[@key='fields']/array/map/string[@key='name' and text()='name']/following-sibling::string[@key='value']/."/>
+                </dcx-dai:surname>
                 <dcx-dai:organization>
-                    <dcx-dai:name xml:lang="en">Example Org</dcx-dai:name>
+                    <dcx-dai:name xml:lang="en">
+                        <xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='author']/following-sibling::array[@key='fields']/array/map/string[@key='name' and text()='affiliation']/following-sibling::string[@key='value']/."/>                    </dcx-dai:name>
                 </dcx-dai:organization>
             </dcx-dai:author>
         </dcx-dai:creatorDetails>
         <!-- CIT007 -->
-        <dcx-dai:creatorDetails>
+       <!-- <dcx-dai:creatorDetails>
             <dcx-dai:organization>
                 <dcx-dai:name xml:lang="en">Creator Organization</dcx-dai:name>
             </dcx-dai:organization>
-        </dcx-dai:creatorDetails>
+        </dcx-dai:creatorDetails>-->
         <!-- CIT008: contact is created from Dataverse account of depositing user -->
 
         <!-- CIT019 -->
         <ddm:created>2015-09-09</ddm:created>
         <!-- CIT025 -->
-        <ddm:available>2015-09-09</ddm:available>
+            <ddm:available><xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='administrative']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='date_available']/following-sibling::string[@key='value']/."/></ddm:available>
         <!-- CIT013 and REL001 -->
-        <ddm:audience>D13400</ddm:audience>
-        <ddm:audience>D16300</ddm:audience>
-        <ddm:audience>D16100</ddm:audience>
-        <ddm:audience>D16200</ddm:audience>
-        <ddm:audience>D16400</ddm:audience>
-        <ddm:audience>D16500</ddm:audience>
-        <ddm:audience>E16000</ddm:audience> <!-- NB CIT013 will map this to the subject 'Other', but drop that because it is not the only subject found -->
+            
+        
+        <!--<xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='subject']/following-sibling::array[@key='value']/map/string/."/>-->
+        <xsl:for-each select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='subject']/following-sibling::array[@key='value']/map">
+            <ddm:audience>
+            <xsl:value-of select="./string[@key='id']/." />
+            </ddm:audience>
+        </xsl:for-each>
+      
+        <!--ddm:audience>D15100</ddm:audience--> <!-- NB CIT013 will map this to the subject 'Other', but drop that because it is not the only subject found -->
 
         <!-- If changed to NO_ACCESS, demonstrates TRM003 -->
         <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>
@@ -81,35 +87,35 @@
     </ddm:profile>
     <ddm:dcmiMetadata>
         <!-- CIT002 -->
-        <dcterms:title>DCTERMS title 1</dcterms:title>
+       <!-- <dcterms:title>DCTERMS title 1</dcterms:title>
         <dcterms:title>DCTERMS title 2</dcterms:title>
         <dcterms:alternative>DCTERMS alt title 1</dcterms:alternative>
-        <dcterms:alternative>DCTERMS alt title 2</dcterms:alternative>
+        <dcterms:alternative>DCTERMS alt title 2</dcterms:alternative>-->
 
         <!-- CIT004 -->
-        <dcterms:identifier>DCTERMS_ID001</dcterms:identifier>
+        <!--<dcterms:identifier>DCTERMS_ID001</dcterms:identifier>
         <dcterms:identifier>DCTERMS_ID002</dcterms:identifier>
-        <dcterms:identifier>DCTERMS_ID003</dcterms:identifier>
+        <dcterms:identifier>DCTERMS_ID003</dcterms:identifier>-->
 
         <!-- CIT011 -->
-        <dcterms:date>some date</dcterms:date>
+       <!-- <dcterms:date>some date</dcterms:date>
         <dcterms:dateAccepted>some acceptance date</dcterms:dateAccepted>
         <dcterms:dateCopyrighted>some copyright date</dcterms:dateCopyrighted>
         <dcterms:dateSubmitted>some submission date</dcterms:dateSubmitted>
         <dcterms:modified>some modified date</dcterms:modified>
         <dcterms:issued>some issuing date</dcterms:issued>
         <dcterms:valid>some validation date</dcterms:valid>
-        <dcterms:coverage>some coverage description</dcterms:coverage>
+        <dcterms:coverage>some coverage description</dcterms:coverage>-->
 
         <!-- CIT012 -->
-        <dcterms:description>Even more descriptions</dcterms:description>
+        <!--<dcterms:description>Even more descriptions</dcterms:description>-->
 
         <!-- CIT014 -->
         <dcterms:subject>keyword1</dcterms:subject>
         <dcterms:subject>keyword2</dcterms:subject>
 
         <!-- CIT015 -->
-        <ddm:subject schemeURI="https://data.cultureelerfgoed.nl/term/id/pan/PAN"
+        <!--<ddm:subject schemeURI="https://data.cultureelerfgoed.nl/term/id/pan/PAN"
                      subjectScheme="PAN thesaurus ideaaltypes"
                      valueURI="https://data.cultureelerfgoed.nl/term/id/pan/08-01-08"
                      xml:lang="en">non-military uniform button
@@ -118,19 +124,28 @@
                      subjectScheme="Art and Architecture Thesaurus"
                      valueURI="http://vocab.getty.edu/aat/300239261"
                      xml:lang="en">Broader Match: buttons (fasteners)
-        </ddm:subject>
+        </ddm:subject>-->
 
         <!-- CIT016 -->
-        <dcterms:language>Old School Latin</dcterms:language>
+<!--        <dcterms:language>Old School Latin</dcterms:language>-->
 
         <!-- CIT017 -->
 <!--        <dcterms:identifier xsi:type="id-type:ISSN">0317-8471</dcterms:identifier>
--->
+-->     
         <!-- CIT018 -->
-        <ddm:language encodingScheme="ISO639-1" code="fy">West-Fries</ddm:language>
-        <ddm:language encodingScheme="ISO639-2" code="kal">Groenlands</ddm:language>
+        <!-- 
+        <xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='administrative']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='language']/following-sibling::string[@key='value']/."/>
+        -->
+                <ddm:language encodingScheme="ISO639-1">
+                    <xsl:attribute name="code">
+                        <xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='administrative']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='language']/following-sibling::map[@key='value']/string[@key='value']/."/>                     
+                    </xsl:attribute>   
+                    <xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='administrative']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='language']/following-sibling::map[@key='value']/string[@key='label']/."/>
+                    
+                </ddm:language>
+        <!--<ddm:language encodingScheme="ISO639-2" code="kal">Groenlands</ddm:language>
         <ddm:language encodingScheme="ISO639-2" code="baq">Baskisch</ddm:language>
-
+-->
         <!-- CIT019 see profile -->
 
         <!-- CIT020 -->
@@ -162,25 +177,27 @@
 <!--        <dcterms:identifier xsi:type="id-type:NWO-PROJECTNR">54321</dcterms:identifier>-->
 
         <!-- CIT024 -->
-        <dcterms:publisher>D. I. Stributor</dcterms:publisher>
+        <dcterms:publisher>
+            <xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='publisher']/following-sibling::map[@key='value']/string[@key='label']/."/>
+        </dcterms:publisher>
         <!-- Special values: skipped -->
-        <dcterms:publisher>DANS</dcterms:publisher>
+       <!-- <dcterms:publisher>DANS</dcterms:publisher>
         <dcterms:publisher>DANS-KNAW</dcterms:publisher>
         <dcterms:publisher>DANS/KNAW</dcterms:publisher>
-
+-->
         <!-- CIT025 see profile -->
 
         <!-- CIT026 -->
         <ddm:datesOfCollection>2015-06-01/2016-12-31</ddm:datesOfCollection>
 
         <!-- CIT027 -->
-        <ddm:description descriptionType="SeriesInformation">Information about a series: first</ddm:description>
+       <!-- <ddm:description descriptionType="SeriesInformation">Information about a series: first</ddm:description>
         <ddm:description descriptionType="SeriesInformation">Information about a series: second</ddm:description>
-
+-->
         <!-- CIT028 --> <!-- RIG003 Any element can add a metadata language -->
-        <dcterms:source xml:lang="ht">Sous an ayisyen</dcterms:source>
+       <!-- <dcterms:source xml:lang="ht">Sous an ayisyen</dcterms:source>
         <dcterms:source>Source 2</dcterms:source>
-        <dcterms:source>Source 3</dcterms:source>
+        <dcterms:source>Source 3</dcterms:source>-->
 
         <!-- RIG001 -->
         <dcterms:rightsHolder>I Lastname</dcterms:rightsHolder>
@@ -325,7 +342,7 @@
         <!-- TRM002 see example restricted-files-no-access-request -->
 
         <!-- TRM005 and TRM006 -->
-        <dcterms:accessRights>Restricted files accessible under the following conditions: ...</dcterms:accessRights>
+<!--        <dcterms:accessRights>Restricted files accessible under the following conditions: ...</dcterms:accessRights>-->
 
     </ddm:dcmiMetadata>
         
