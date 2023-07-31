@@ -40,19 +40,22 @@
             Unformatted Creator
         </dc:creator>-->
         <!-- CIT006 -->
-        <dcx-dai:creatorDetails>
-            <dcx-dai:author>
-                <dcx-dai:titles></dcx-dai:titles>
-                <dcx-dai:initials></dcx-dai:initials>
-                <dcx-dai:surname>
-                    <xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='author']/following-sibling::array[@key='fields']/array/map/string[@key='name' and text()='name']/following-sibling::map[@key='value']/string[@key='label']"/>
-                </dcx-dai:surname>
-                <dcx-dai:organization>
-                    <dcx-dai:name xml:lang="en">
-                        <xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='author']/following-sibling::array[@key='fields']/array/map/string[@key='name' and text()='affiliation']/following-sibling::string[@key='value']"/>                    </dcx-dai:name>
-                </dcx-dai:organization>
-            </dcx-dai:author>
-        </dcx-dai:creatorDetails>
+            <xsl:for-each select="//array[@key='metadata']/map/string[@key='id' and text()='citation']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='author']/following-sibling::array[@key='fields']/array/map/string[@key='name' and text()='name']">
+                <dcx-dai:creatorDetails>
+                    <dcx-dai:author>
+                        <dcx-dai:titles></dcx-dai:titles>
+                        <dcx-dai:initials></dcx-dai:initials>
+                        <dcx-dai:surname>
+                <xsl:value-of select="following-sibling::map[@key='value']/string[@key='label']"/>
+                        </dcx-dai:surname>
+                        <dcx-dai:organization>
+                            <dcx-dai:name xml:lang="en">
+                <xsl:value-of select="../../map/string[@key='name' and text()='affiliation']/following-sibling::string[@key='value']"/>
+                            </dcx-dai:name>
+                        </dcx-dai:organization>
+                    </dcx-dai:author>
+                </dcx-dai:creatorDetails>
+            </xsl:for-each>
         <!-- CIT007 -->
        <!-- <dcx-dai:creatorDetails>
             <dcx-dai:organization>
@@ -219,6 +222,67 @@
         <!-- REL002 -->
         
         <!-- REL003. N.B. hrefs do not resolve -->
+        <xsl:for-each select="//array[@key='metadata']/map/string[@key='id' and text()='relations']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='relation']/following-sibling::array[@key='fields']/array/map/string[@key='name' and text()='relation_item']">
+<!--            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>-->
+            <xsl:choose>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Has Format'">
+                    <ddm:hasFormat><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:hasFormat>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Requires'">
+                    <ddm:requires><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:requires>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Conforms to'">
+                    <ddm:conformsTo><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:conformsTo>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='References'">
+                    <ddm:references><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:references>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Replaces'">
+                    <ddm:replaces><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:replaces>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Has version'">
+                    <ddm:hasVersion><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:hasVersion>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Is format of'">
+                    <ddm:isFormatOf><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:isFormatOf>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Is part of'">
+                    <ddm:isPartOf><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:isPartOf>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Has part'">
+                    <ddm:hasPart><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:hasPart>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Is referenced by'">
+                    <ddm:isReferencedBy><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:isReferencedBy>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Is required by'">
+                    <ddm:isRequiredBy><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:isRequiredBy>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Is version of'">
+                    <ddm:isVersionOf><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:isVersionOf>
+                </xsl:when>
+                <xsl:when test="../../map/map[@key='value']/string[@key='value']/text()='Is replaced by'">
+                    <ddm:isReplacedBy><xsl:attribute name="href">            <xsl:value-of select="../../map/string[@key='name' and text()='relation_reference']/following-sibling::string[@key='value']"/>
+                    </xsl:attribute><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:isReplacedBy>
+                </xsl:when>
+            <xsl:otherwise></xsl:otherwise>
+            </xsl:choose>
+            
+<!--            <ddm:conformsTo href="https://example.com/conformsTo"><xsl:value-of select="./following-sibling::string[@key='value']"/></ddm:conformsTo>-->
+            
+        </xsl:for-each>
        <!--<ddm:relation href="https://example.com/relation">Test relation</ddm:relation>
         <ddm:conformsTo href="https://example.com/conformsTo">Test conforms to</ddm:conformsTo>
         <ddm:hasFormat href="https://example.com/hasFormat">Test has format</ddm:hasFormat>
