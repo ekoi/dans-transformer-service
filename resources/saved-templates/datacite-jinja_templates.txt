@@ -1,0 +1,19 @@
+{
+    "identifiers": [{
+        "identifierType": "DOI",
+        "identifier": "{{doi}}"
+    }],
+    "creators": [
+        {"name": "{{creator}}"}
+    ],
+    "titles": [
+        {"title": "{{title}}" }
+    ],
+    "publisher": "ODISSEI",
+    "publicationYear": "{{year}}",
+    "types": {
+        "resourceType": "Dataset",
+        "resourceTypeGeneral": "Dataset"
+    },
+    "schemaVersion": "http://datacite.org/schema/kernel-4"
+}

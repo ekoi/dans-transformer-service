@@ -1,0 +1,29 @@
+[default]
+#FastAPI
+fastapi_title = "DANS Transformer Service"
+fastapi_description = "This service supports .."
+
+temp_transform_file = "/tmp/transform"
+#logs
+log_file = "@format {env[BASE_DIR]}/logs/dts.log"
+log_level = 10
+log_format = "%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s"
+#Note: below the list of logging level
+#CRITICAL = 50
+#ERROR = 40
+#WARNING = 30
+#INFO = 20
+#DEBUG = 10
+#xsl location
+saved_xslt_dir = "@format {env[BASE_DIR]}/resources/saved-xsl"
+
+#jinja template location
+jinja_and_prop_dir = "@format {env[BASE_DIR]}/resources/saved-templates"
+
+[development]
+
+[staging]
+
+[testing]
+
+[production]
