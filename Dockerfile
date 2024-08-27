@@ -1,6 +1,6 @@
 FROM python:3.12.0-bookworm
 
-ARG VERSION=0.5.6.6
+ARG VERSION=0.5.9
 
 RUN useradd -ms /bin/bash dans
 
@@ -17,7 +17,7 @@ COPY ./dist/*.* .
 #COPY ./settings.toml ${BASE_DIR}
 RUN mkdir -p ${BASE_DIR} && \
     pip install --no-cache-dir *.whl && rm -rf *.whl && \
-    tar xf dans_transformer_service-${VERSION}.tar.gz -C ${BASE_DIR} --strip-components 1 &&  rm ${BASE_DIR}/conf/*
+    tar xf dans_transformer_service-${VERSION}.tar.gz -C ${BASE_DIR} --strip-components 1
 
 #
 #RUN tar -xzvf dans_transformer_service-${VERSION}.tar.gz -C ${BASE_DIR} --strip-components=1 && \

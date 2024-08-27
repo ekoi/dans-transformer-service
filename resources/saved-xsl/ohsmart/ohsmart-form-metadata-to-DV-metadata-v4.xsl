@@ -199,7 +199,14 @@
             "typeName": "language",
             "multiple": true,
             "typeClass": "controlledVocabulary",
-            "value": ["<xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='administrative']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='language_interview']/following-sibling::map[@key='value']/string[@key='label']/."/>"]
+            "value": [
+      <xsl:for-each select="//array[@key='metadata']/map/string[@key='id' and text()='administrative']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='language_interview']/following-sibling::array[@key='value']/map">
+        "<xsl:value-of select="./string[@key='label']"/>"
+        <xsl:if test="position() != last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+            ]
       },
           {
             "typeName": "productionDate",
@@ -302,12 +309,7 @@
                   "typeName": "dansMetadataLanguage",
                   "multiple": true,
                   "typeClass": "controlledVocabulary",
-                  "value": [<xsl:for-each select="//array[@key='metadata']/map/string[@key='id' and text()='administrative']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='language_metadata']/following-sibling::array[@key='value']/map">
-                    "<xsl:value-of select="./string[@key='label']"/>"
-                    <xsl:if test="position() != last()">
-                      <xsl:text>,</xsl:text>
-                    </xsl:if>
-                  </xsl:for-each>]
+                  "value": ["<xsl:value-of select="//array[@key='metadata']/map/string[@key='id' and text()='administrative']/following-sibling::array[@key='fields']/map/string[@key='name' and text()='language_metadata']/following-sibling::map[@key='value']/string[@key='label']"/>"]                
                 }
           ]
       },

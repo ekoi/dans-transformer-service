@@ -20,10 +20,13 @@
         "<xsl:value-of select="replace($fn, '&quot;', '\\&quot;')"/>":      
         {
         "description": "<xsl:if test="./map[@key='role']">Role: <xsl:value-of select="./map/string[@key='label']"/></xsl:if>",
-        "directoryLabel": "<xsl:if test="./string[@key='name' and starts-with(text(), '__generated__')]">generated-files</xsl:if>",
+        "directoryLabel": "<xsl:choose>
+          <xsl:when test="./string[@key='name' and starts-with(text(), '__generated__form-metadata-')]">__generated__files</xsl:when>
+          <xsl:when test="./string[@key='name' and (text() = 'Oral History metadata private.txt' or text()='Oral History metadata public.txt')]">Oral History metadata</xsl:when>
+        </xsl:choose>",
         "categories": [
-        <xsl:if test="./string[@key='name' and starts-with(text(), '__generated__')]">
-          "generated-file"
+        <xsl:if test="./string[@key='name' and (starts-with(text(), '__generated__form-metadata-') or text()='Oral History metadata private.txt' or text()='Oral History metadata public.txt')]">
+          "__generated__files"
         </xsl:if>
         ],
         <xsl:if test="./boolean[@key='private']='true'">

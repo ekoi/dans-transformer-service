@@ -69,15 +69,10 @@ app.include_router(
 )
 
 
-# @app.on_event('startup')
-# def start_up():
-#     data.clear()
-#     initialize_templates()
-#     initialize_xslt_proc()
-
-
 @app.get('/')
 def info():
+    logging.info('info')
+    print('info')
     return {"name": "DANS Transformer Service", "version": __version__}
 
 

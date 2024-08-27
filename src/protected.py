@@ -63,6 +63,8 @@ async def submit_xslt_from_url(xslt_name: str, xsl_url: str, save: bool | None =
 
 @router.post("/transform/{xslt_name}", tags=['Transform'])
 async def transform(xslt_name: str, submitted_json_or_xml: Request):
+    logging.debug(f'xslt_name: {xslt_name}')
+    print(f'xslt_name: {xslt_name}')
     content_type = submitted_json_or_xml.headers['Content-Type']
     str_xml = ""
     if xslt_name not in data.keys():
