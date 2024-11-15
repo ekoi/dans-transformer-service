@@ -6,6 +6,7 @@ from os.path import exists
 from xml.dom.minidom import parseString
 
 import jinja2
+import tomli
 from fastapi_utils.enums import StrEnum
 from jproperties import Properties
 from saxonche import PySaxonProcessor, PyXdmValue
@@ -22,6 +23,15 @@ logging.basicConfig(filename=settings.LOG_FILE, level=settings.LOG_LEVEL,
 
 data = {}
 
+def get_version():
+    with open(os.path.join(os.getenv("BASE_DIR"), 'pyproject.toml'), 'rb') as file:
+        package_details = tomli.load(file)
+    return package_details['tool']['poetry']['version']
+
+def get_name():
+    with open(os.path.join(os.getenv("BASE_DIR"), 'pyproject.toml'), 'rb') as file:
+        package_details = tomli.load(file)
+    return package_details['tool']['poetry']['name']
 
 class RdfOutputFormat(StrEnum):
     xml = auto()

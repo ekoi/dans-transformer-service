@@ -33,6 +33,7 @@ xmltodict = "^0.13.0"
 fastapi-utils = "^0.2.1"
 boltons = "^23.1.1"
 saxonche = "^12.4.2"
+tomli = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.4"

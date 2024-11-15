@@ -6,10 +6,10 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 
-__version__ = importlib.metadata.metadata("dans-transformer-service")["version"]
 
 from src import protected, public
-from src.commons import settings, initialize_xslt_proc, iterate_saved_jinja_and_props, initialize_templates, data
+from src.commons import settings, initialize_xslt_proc, iterate_saved_jinja_and_props, initialize_templates, data, \
+    get_version
 
 api_keys = [
     settings.DANS_TRANSFORMER_SERVICE_API_KEY
@@ -53,7 +53,7 @@ async def lifespan(application: FastAPI):
 
 
 app = FastAPI(title=settings.FASTAPI_TITLE, description=settings.FASTAPI_DESCRIPTION,
-              version=__version__, lifespan=lifespan)
+              version= get_version(), lifespan=lifespan)
 
 app.include_router(
     public.router,
@@ -73,7 +73,7 @@ app.include_router(
 def info():
     logging.info('info')
     print('info')
-    return {"name": "DANS Transformer Service", "version": __version__}
+    return {"name": "DANS Transformer Service", "version": get_version()}
 
 
 if __name__ == "__main__":
