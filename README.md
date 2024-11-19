@@ -1,36 +1,52 @@
-# dans-transformer-service
-For the first time:
-git clone https://github.com/ekoi/dans-transformer-service
-cd dans-transformer-service
-poetry install
-poetry shell
-poetry update
+# Transformer Service
+The transformer service converts metadata from one format to another, ensuring compatibility with various repository standards and requirements. It plays a crucial role in facilitating data interoperability and seamless content migration between repositories. By leveraging XSLT-based transformation technology, the transformer service efficiently converts metadata into multiple formats, enabling seamless integration with diverse repository systems.
 
-For macos:
-export SAXONC_HOME=$YOUR_PROJECT_BASE_PATH/saxon/saxon-macos
-export PYTHONPATH=$PYTHONPATH:$YOUR_PROJECT_BASE_PATH/saxon/saxon-macos/Saxon.C.API/python-saxon
+The transformer service offers several advantages when using XSLT for mapping metadata between repositories. These benefits highlight why XSLT is often a superior choice compared to writing custom code or scripts for metadata transformations:
 
+## Advantages of Using a Transformation Service
 
-cd $SAXONC_HOME 
-unzip libsaxon-HEC-mac-setup-v11.4.zip
-cd libsaxon-HEC-11.4
-cp libsaxonhec.dylib $SAXONC_HOME
-cp -r rt $SAXONC_HOME
-cp -r saxon-data $SAXONC_HOME
-cp -r Saxon.C.API $SAXONC_HOME
-cd $SAXONC_HOME/Saxon.C.API/python-saxon
-python3 saxon-setup.py build_ext -if
-If it goes well, a build directory will be created in $SAXONC_HOME/Saxon.C.API/python-saxon
+### Standardized Metadata Conversion
+The service ensures consistent and accurate transformations between metadata formats, reducing errors and discrepancies during data migration.
 
+### Simplified Maintenance
+Centralizing transformations within a dedicated service streamlines updates. When metadata standards evolve, only the XSLT needs adjustment, avoiding widespread code changes across systems.
 
-For PyCharm:
-add SAXONC_HOME and PYTHONPATH on your environment
+### Enhanced Interoperability
+By adhering to repository standards and formats, the service facilitates seamless integration between diverse systems, reducing technical friction.
 
-poetry build; docker rm -f dans-transformer-service; docker rmi ekoindarto/dans-transformer-service:0.2.5; docker build --no-cache -t ekoindarto/dans-transformer-service:0.2.5 -f Dockerfile . ;docker run -d -p 1745:1745 --name dans-transformer-service ekoindarto/dans-transformer-service:0.2.5; docker exec -it dans-transformer-service /bin/bash
+### Reusability and Scalability
+XSLT stylesheets can be reused for multiple repositories or workflows, making the service scalable and reducing development effort for future projects.
 
-curl -X POST -H "Content-Type: application/json" -d @/Users/akmi/git/ODISSEI/mapping-resources/examples/json/ext2.json http://0.0.0.0:1745/transform/cbs-datacite
+## Benefits of Transformation Service Using XSLT
 
-curl -X 'POST' \
-  'http://0.0.0.0:1745/submit-xsl2/abc/https%3A%2F%2Fraw.githubusercontent.com%2Fekoi%2Fmapping-resources%2Fmain%2Fexamples%2Fxsl%2Fdatacite.xsl/true' \
-  -H 'accept: application/json' \
-  -d ''
+### 1. **Platform Independence**
+XSLT (Extensible Stylesheet Language Transformations) is a W3C standard, which ensures that transformations are platform-independent. This means that XSLT can be used across different systems and environments without compatibility issues.
+
+### 2. **Separation of Concerns**
+XSLT allows for a clear separation between the data (XML) and its presentation. This separation makes it easier to manage and maintain the code, as changes to the presentation layer do not affect the underlying data structure.
+
+### 3. **Reusability**
+XSLT stylesheets can be reused across multiple XML documents. This reusability reduces redundancy and ensures consistency in the transformation process.
+
+### 4. **Flexibility**
+XSLT provides powerful features for transforming XML documents into various formats, such as HTML, plain text, or other XML formats. This flexibility makes it suitable for a wide range of applications, from web development to data interchange.
+
+### 5. **Declarative Syntax**
+XSLT uses a declarative approach, which specifies what the output should look like rather than how to achieve it. This makes XSLT stylesheets easier to read and understand, especially for those familiar with XML.
+
+### 6. **Extensibility**
+XSLT can be extended with custom functions and templates, allowing developers to add specific functionality as needed. This extensibility makes XSLT a powerful tool for complex transformation tasks.
+
+### 7. **Standardized and Well-Supported**
+As a W3C standard, XSLT is well-documented and supported by a wide range of tools and libraries. This ensures that developers have access to the resources they need to effectively use XSLT in their projects.
+
+### 8. **Efficient Processing**
+XSLT processors are optimized for transforming XML documents, making the transformation process efficient and performant. This is particularly important for applications that require real-time or high-volume data processing.
+
+### 9. **Interoperability**
+XSLT can be used to transform XML data into formats that are compatible with other systems and applications. This interoperability is crucial for integrating different systems and ensuring smooth data exchange.
+
+### 10. **Automation**
+XSLT can be used to automate the transformation of XML documents, reducing the need for manual intervention and minimizing the risk of errors. This automation is beneficial for workflows that involve repetitive or large-scale data transformations.
+
+By leveraging these benefits, a transformation service using XSLT can provide a robust, flexible, and efficient solution for handling XML data transformations.
