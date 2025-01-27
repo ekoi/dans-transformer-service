@@ -1,10 +1,8 @@
 import logging
 import os
-from os.path import exists
 
-from fastapi import HTTPException, Query, APIRouter
+from fastapi import Query, APIRouter
 
-import src
 from src.commons import settings, data
 
 router = APIRouter()

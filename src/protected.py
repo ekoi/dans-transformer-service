@@ -1,23 +1,19 @@
 import json
-import shutil
-import uuid
 import logging
 import os
+import shutil
+import uuid
+import xml
+import xml.etree.ElementTree as ET
 from typing import Union
-from xml.dom.minidom import parseString
 
 import requests
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
-import xml
-
 import xmltodict
 from boltons.iterutils import remap
-from fastapi import Response
-from rdflib import Graph
-
 # import codecs
 from fastapi import APIRouter, Request, HTTPException, Query
+from fastapi import Response
+from rdflib import Graph
 
 from src.commons import data, settings, validate_json, RdfOutputFormat, prettify_xml, \
     OutputFormat, initialize_templates, initialize_xslt_proc
@@ -27,6 +23,20 @@ router = APIRouter()
 
 @router.post('/upload-xsl/{xslt_file_name}/{save}', status_code=201, tags=['Upload XSLT'])
 async def submit_xsl(xslt_file_name: str, submitted_xsl: Request, save: bool | None = False):
+    """
+    Endpoint to upload an XSLT file.
+
+    Args:
+        xslt_file_name (str): The name of the XSLT file to be uploaded.
+        submitted_xsl (Request): The request object containing the XSLT file content.
+        save (bool | None): Flag indicating whether to save the XSLT file. Defaults to False.
+
+    Returns:
+        dict: A dictionary containing a message about the status of the upload.
+
+    Raises:
+        HTTPException: If the content type of the submitted file is not 'application/xml'.
+    """
     xslt_file_name = await construct_xslt_file_name(xslt_file_name)
 
     content_type = submitted_xsl.headers['Content-Type']
@@ -49,6 +59,20 @@ async def construct_xslt_file_name(xslt_file_name):
 
 @router.post('/upload-xsl/{xslt_name}/{xsl_url:path}/{save}', status_code=201, tags=['Upload XSLT'])
 async def submit_xslt_from_url(xslt_name: str, xsl_url: str, save: bool | None = False):
+    """
+    Endpoint to upload an XSLT file from a URL.
+
+    Args:
+        xslt_name (str): The name to save the XSLT file as.
+        xsl_url (str): The URL from which to fetch the XSLT file.
+        save (bool | None): Flag indicating whether to save the XSLT file. Defaults to False.
+
+    Returns:
+        dict: A dictionary containing a message about the status of the upload.
+
+    Raises:
+        HTTPException: If the response status code from the URL is not 200.
+    """
     response = requests.get(xsl_url)
     if response.status_code != 200:
         raise HTTPException(status_code=response.status_code,
@@ -63,6 +87,20 @@ async def submit_xslt_from_url(xslt_name: str, xsl_url: str, save: bool | None =
 
 @router.post("/transform/{xslt_name}", tags=['Transform'])
 async def transform(xslt_name: str, submitted_json_or_xml: Request):
+    """
+    Endpoint to transform a submitted JSON or XML document using a specified XSLT.
+
+    Args:
+        xslt_name (str): The name of the XSLT to be used for transformation.
+        submitted_json_or_xml (Request): The request object containing the JSON or XML document to be transformed.
+
+    Returns:
+        dict: A dictionary containing the transformation result.
+
+    Raises:
+        HTTPException: If the XSLT name is not found in the data keys.
+        HTTPException: If the content type of the submitted document is not supported.
+    """
     logging.debug(f'xslt_name: {xslt_name}')
     print(f'xslt_name: {xslt_name}')
     content_type = submitted_json_or_xml.headers['Content-Type']
@@ -85,9 +123,24 @@ async def transform(xslt_name: str, submitted_json_or_xml: Request):
     result = await transform_to_string(str_xml, xml_tmpfile, xslt_name)
     return {"result": result}
 
-
 @router.post("/transform/{xslt_name}/{output_type}", tags=['Transform'])
 async def transform_specified_outpu(xslt_name: str, output_type: OutputFormat, submitted_json_or_xml: Request):
+    """
+    Endpoint to transform a submitted JSON or XML document using a specified XSLT and output format.
+
+    Args:
+        xslt_name (str): The name of the XSLT to be used for transformation.
+        output_type (OutputFormat): The desired output format (json or xml).
+        submitted_json_or_xml (Request): The request object containing the JSON or XML document to be transformed.
+
+    Returns:
+        dict or xml.etree.ElementTree.Element: The transformation result in the specified output format.
+
+    Raises:
+        HTTPException: If the XSLT name is not found in the data keys.
+        HTTPException: If the content type of the submitted document is not supported.
+        HTTPException: If the output format is not valid.
+    """
     content_type = submitted_json_or_xml.headers['Content-Type']
     str_xml = ""
     submitted_xml = ""
@@ -147,6 +200,23 @@ async def transform_specified_outpu(xslt_name: str, output_type: OutputFormat, s
 @router.post("/transform/{xslt_name}/{source_url:path}", tags=['Transform'])
 async def transform(xslt_name: str, source_url,
                     output_format: Union[str | None] = Query(default=None, enum=["json", "xml"])):
+    """
+    Endpoint to transform a document from a given URL using a specified XSLT and output format.
+
+    Args:
+        xslt_name (str): The name of the XSLT to be used for transformation.
+        source_url (str): The URL from which to fetch the document to be transformed.
+        output_format (Union[str | None]): The desired output format (json or xml). Defaults to None.
+
+    Returns:
+        dict or Response: The transformation result in the specified output format.
+
+    Raises:
+        HTTPException: If the request to the source URL fails.
+        HTTPException: If the response status code from the URL is not 200.
+        HTTPException: If the XSLT name is not found in the data keys.
+        HTTPException: If the content type of the document is not supported.
+    """
     try:
         response = requests.get(source_url)
     except requests.exceptions.RequestException as ce:
@@ -192,67 +262,21 @@ async def transform(xslt_name: str, source_url,
         return {"result": result}
 
 
-# @router.post("/transform2/{xslt_url:path}/{use_cached_xslt}", tags=['Transform'])
-# async def transform(xslt_url, use_cached_xslt: bool, submitted_json_or_xml: Request, output_format: Union[str | None] = Query(default=None, enum=["json", "xml"])):
-#
-#     # Format the name and check whether the xslt exist
-#     xslt_url_file_name = str(xslt_url).replace('https://raw.githubusercontent.com/', '').replace('/', '') + '.xsl'
-#     if xslt_url_file_name in data.keys() and use_cached_xslt:
-#         logging.debug(f'{xslt_url_file_name} is in the cache.')
-#     else:
-#         # In the case that the 'xslt_url_file_name' not in the cache or use_cached_xslt is false
-#         # Or when use_cached_xslt is true, but it is for the first time
-#         # try:
-#         await submit_xslt_from_url(xslt_url_file_name, xslt_url, use_cached_xslt)
-# rsp_xslt_url = requests.get(xslt_url)
-# xsl = rsp_xslt_url.text
-# xslt_file_name = await construct_xslt_file_name(xslt_url_file_name)
-# except requests.exceptions.RequestException as ce:
-#     raise HTTPException(status_code=404, detail=f'RequestException from {xslt_url}')
-#
-# if rsp_xslt_url.status_code != 200:
-#     raise HTTPException(status_code=rsp_xslt_url.status_code,
-#                         detail=f'Retrieve response code {rsp_xslt_url.status_code} from {xslt_url}')
-#
-
-
-# content_type = rsp_source_url.headers['Content-Type']
-# if content_type in ['application/json', 'application/xml', 'application/json;charset=UTF-8', 'text/plain; charset=utf-8']:
-#     xml_tmp_file_name = create_xml_tmp_file_name(xslt_url_file_name)
-#     if content_type in ['application/json', 'application/json;charset=UTF-8', 'text/plain; charset=utf-8']:
-#         if validate_json(rsp_source_url.content.decode("UTF-8")):
-#             submitted_json = json.loads(rsp_source_url.content.decode("UTF-8"))
-#             str_xml = await validate_xml_encapsulated_json(submitted_json, xml_tmp_file_name)
-#         else:
-#             raise HTTPException(status_code=400, detail='Not valid json.')
-#     else:
-#         submitted_xml = await rsp_source_url.content.decode("UTF-8")
-#         str_xml = await validate_submitted_xml(submitted_xml)
-# else:
-#     raise HTTPException(status_code=400, detail=f'Content type {content_type} not supported')
-
-
-#
-# result = await transform_to_string(str_xml, submitted_json, xml_tmp_file_name, xslt_url_file_name)
-# if output_format == 'json':
-#     if validate_json(result):
-#         return {"result": json.loads(result)}
-#     else:
-#         return {"ERROR": "Not valid JSON format", "result": result}
-# elif output_format == 'xml':
-#     try:
-#         result_as_xml = prettify_xml(result)
-#         return Response(content=result_as_xml, media_type="application/xml")
-#     except xml.parsers.expat.ExpatError as e:
-#         return {"ERROR": "Not welformat XML", "result": result}
-#
-# else:
-#     return {"result": result
-
-
 @router.post("/transform-jsonld-to-rdf", tags=['Transform'], name='Transform json-ld to RDF-XML format.'
     , description='The output will be in RDF-XML format.')
 async def transform(submitted_json: Request):
+    """
+    Endpoint to transform a submitted JSON-LD document to RDF-XML format.
+
+    Args:
+        submitted_json (Request): The request object containing the JSON-LD document to be transformed.
+
+    Returns:
+        dict: A dictionary containing the transformation result in RDF-XML format.
+
+    Raises:
+        HTTPException: If the content type of the submitted document is not 'application/json+ld'.
+    """
     content_type = submitted_json.headers['Content-Type']
     if content_type not in ['application/json+ld']:
         raise HTTPException(status_code=400, detail=f'Content type {content_type} not supported')
@@ -266,6 +290,19 @@ async def transform(submitted_json: Request):
              name='Transform json-ld to a given RDF output format.'
     , description='The output will be in RDF-XML format.')
 async def transform(output_format: RdfOutputFormat, submitted_json: Request):
+    """
+    Endpoint to transform a submitted JSON-LD document to a specified RDF output format.
+
+    Args:
+        output_format (RdfOutputFormat): The desired RDF output format.
+        submitted_json (Request): The request object containing the JSON-LD document to be transformed.
+
+    Returns:
+        dict: A dictionary containing the transformation result in the specified RDF format.
+
+    Raises:
+        HTTPException: If the content type of the submitted document is not 'application/json+ld'.
+    """
     if submitted_json.headers['Content-Type'] not in ['application/json+ld']:
         raise HTTPException(status_code=400,
                             detail=f"Content type {submitted_json.headers['Content-Type']} not supported")
@@ -274,10 +311,22 @@ async def transform(output_format: RdfOutputFormat, submitted_json: Request):
 
     return {"result": result}
 
-
 @router.post("/transform-jsonld-to-rdf/{output_format}/{source_url:path}", tags=['Transform'],
              name='Transform json-ld to a given RDF output format.')
 async def transform(output_format: RdfOutputFormat, source_url):
+    """
+    Endpoint to transform a JSON-LD document from a given URL to a specified RDF output format.
+
+    Args:
+        output_format (RdfOutputFormat): The desired RDF output format.
+        source_url (str): The URL from which to fetch the JSON-LD document.
+
+    Returns:
+        dict: A dictionary containing the transformation result in the specified RDF format.
+
+    Raises:
+        HTTPException: If the response status code from the URL is not 200.
+    """
     response = requests.get(source_url)
     if response.status_code != 200:
         raise HTTPException(status_code=response.status_code,
@@ -291,10 +340,22 @@ async def transform(output_format: RdfOutputFormat, source_url):
 
     return {"result": result}
 
-
 @router.post("/transform-xml-to-json/{clean_output}", tags=['Transform'], name='Transform xml to json format.'
     , description='The output will be in json format.')
 async def transform(submitted_xml: Request, clean_output: bool | None = False):
+    """
+    Endpoint to transform a submitted XML document to JSON format.
+
+    Args:
+        submitted_xml (Request): The request object containing the XML document to be transformed.
+        clean_output (bool | None): Flag indicating whether to clean the output JSON. Defaults to False.
+
+    Returns:
+        dict: A dictionary containing the transformation result in JSON format.
+
+    Raises:
+        HTTPException: If the content type of the submitted document is not 'application/xml'.
+    """
     content_type = submitted_xml.headers['Content-Type']
     if content_type not in ['application/xml']:
         raise HTTPException(status_code=400, detail=f'Content type {content_type} not supported')
@@ -335,6 +396,11 @@ def delete_saved_xsl(xslt_name: str):
 async def create_xml_tmp_file_name(xslt_name):
     xml_tmp_file_name = f"{settings.TEMP_TRANSFORM_FILE}-{str(uuid.uuid1())}-{xslt_name}.xml"
     return xml_tmp_file_name
+
+
+async def ceate_executable_xslt(s_xsl):
+    #TODO: Implement this function
+    pass
 
 
 async def process_xsl(s_xsl, save, xslt_name):

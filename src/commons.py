@@ -1,4 +1,5 @@
 import glob
+import json
 import logging
 import os
 from enum import auto
@@ -6,32 +7,19 @@ from os.path import exists
 from xml.dom.minidom import parseString
 
 import jinja2
-import tomli
+from akmi_utils import commons as a_commons
+from dynaconf import Dynaconf
 from fastapi_utils.enums import StrEnum
 from jproperties import Properties
 from saxonche import PySaxonProcessor, PyXdmValue
-import json
-import xml.etree.ElementTree as ET
-
-from dynaconf import Dynaconf
 
 settings = Dynaconf(settings_files=["conf/settings.toml", "conf/.secrets.toml"],
                     environments=True)
 
-logging.basicConfig(filename=settings.LOG_FILE, level=settings.LOG_LEVEL,
-                    format=settings.LOG_FORMAT)
-
 data = {}
 
-def get_version():
-    with open(os.path.join(os.getenv("BASE_DIR"), 'pyproject.toml'), 'rb') as file:
-        package_details = tomli.load(file)
-    return package_details['tool']['poetry']['version']
+project_details = a_commons.get_project_details(os.getenv("BASE_DIR"), ['name', 'version', 'description', 'title'])
 
-def get_name():
-    with open(os.path.join(os.getenv("BASE_DIR"), 'pyproject.toml'), 'rb') as file:
-        package_details = tomli.load(file)
-    return package_details['tool']['poetry']['name']
 
 class RdfOutputFormat(StrEnum):
     xml = auto()

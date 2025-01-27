@@ -5,7 +5,7 @@ fastapi_description = "This service supports .."
 
 temp_transform_file = "/tmp/transform"
 #logs
-log_file = "@format {env[BASE_DIR]}/logs/dts.log"
+log_file = "@format {env[BASE_DIR]}/logs/ts.log"
 log_level = 10
 log_format = "%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s"
 #Note: below the list of logging level
