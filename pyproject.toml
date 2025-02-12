@@ -1,6 +1,6 @@
 [project]
 name = "transformer-service"
-version = "0.6.1"
+version = "0.6.3"
 description = "The transformer service converts metadata from one format to another, ensuring compatibility with various repository standards and requirements. It plays a crucial role in facilitating data interoperability and seamless content migration between repositories. By leveraging XSLT-based transformation technology, the transformer service efficiently converts metadata into multiple formats, enabling seamless integration with diverse repository systems."
 authors = [
     {name = "Eko Indarto", email = "eko.indarto@dans.knaw.nl"}
@@ -20,7 +20,7 @@ fastapi-utils = "^0.2.1"
 boltons = "^23.1.1"
 saxonche = "^12.5.0"
 tomli = "^2.1.0"
-akmi-utils = "^0.1.5.2"
+akmi-utils = "^0.1.6.2"
 
 [poetry.group.dev.dependencies]
 pytest = "^8.3.4"

@@ -7,12 +7,16 @@ from logging.handlers import RotatingFileHandler
 import uvicorn
 from akmi_utils import otel, logging as akmi_logging
 from fastapi import FastAPI, HTTPException, Depends, status, Request
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 from starlette.middleware.cors import CORSMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src import protected, public
 from src.commons import settings, initialize_xslt_proc, initialize_templates, data, \
     project_details
+
+from akmi_utils import commons as a_commons
 
 api_keys = [
     settings.DANS_TRANSFORMER_SERVICE_API_KEY
@@ -60,17 +64,28 @@ app = FastAPI(title= project_details['title'], description = project_details['de
               version= project_details['version'], lifespan=lifespan)
 
 LOG_FILE = settings.LOG_FILE
-print(f'---------------LOG_FILE: {LOG_FILE}')
+log_config = uvicorn.config.LOGGING_CONFIG
 
-app.add_middleware(otel.PrometheusMiddleware, app_name=APP_NAME)
-app.add_route("/metrics", otel.metrics)
+if settings.otlp_enable is False:
+    logging.basicConfig(filename=settings.LOG_FILE, level=settings.LOG_LEVEL,
+                        format=settings.LOG_FORMAT)
+else:
+    a_commons.set_otlp(app, APP_NAME, OTLP_GRPC_ENDPOINT, LOG_FILE, log_config)
 
-otel.setting_otlp(app, APP_NAME, OTLP_GRPC_ENDPOINT)
 
-
-@app.middleware("http")
-async def log_requests_middleware(request: Request, call_next):
-    return await akmi_logging.log_requests(request, call_next)
+@app.exception_handler(StarletteHTTPException)
+async def custom_404_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        logging.error(f"404 Not Found: {request.url}")
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Endpoint not found"}
+        )
+    logging.error(f"HTTP Exception: {exc.status_code} - {exc.detail}")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"message": exc.detail}
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -92,8 +107,6 @@ app.include_router(
     dependencies=[Depends(api_key_auth)]
 )
 
-logging.getLogger("uvicorn.access").addFilter(otel.MetricsEndpointFilter())
-logging.getLogger("uvicorn.access").addFilter(otel.TraceContextFilter())
 @app.get('/info')
 def info():
     logging.info('info')
@@ -102,18 +115,5 @@ def info():
 
 if __name__ == "__main__":
 
-    log_config = uvicorn.config.LOGGING_CONFIG
-    log_config["formatters"]["access"]["fmt"] = (
-        "%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] [%(funcName)s] "
-        "[trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s] - %(message)s"
-    )
-
-    file_handler = RotatingFileHandler(LOG_FILE, maxBytes=10 * 1024 * 1024, backupCount=10)
-    file_handler.setFormatter(logging.Formatter(log_config["formatters"]["access"]["fmt"]))
-    print(f'---------------LOG_FILE: {LOG_FILE}')
-    logging.getLogger().addHandler(file_handler)
-    # Set the logging level for h11 to ERROR
-    logging.getLogger("h11").setLevel(logging.ERROR)
-    file_handler.setLevel(logging.INFO)
-
+    logging.info("TS: Starting the app __main__")
     uvicorn.run(app, host="0.0.0.0", port=EXPOSE_PORT, log_config=log_config)

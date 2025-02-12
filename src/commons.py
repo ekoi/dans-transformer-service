@@ -17,6 +17,8 @@ settings = Dynaconf(settings_files=["conf/settings.toml", "conf/.secrets.toml"],
                     environments=True)
 
 data = {}
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.environ["BASE_DIR"] = os.getenv("BASE_DIR", base_dir)
 
 project_details = a_commons.get_project_details(os.getenv("BASE_DIR"), ['name', 'version', 'description', 'title'])
 
